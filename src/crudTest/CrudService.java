@@ -30,14 +30,15 @@ public class CrudService {
 	 */
 
 	public void avvio() throws Exception {
-		boolean var = true;
+		boolean loadApp = true;
 		repo.connectDb(); // Effettua la connessione al DB tramite classe CrudRepo;
-		while (var) {
-			var = Avviato(); 
+		while (loadApp) {
+			loadApp = Avviato(); 
 		}
 	}
-
-	public boolean Avviato() throws Exception { 	
+	
+	public boolean Avviato() throws Exception { 
+		boolean option = false;
 		System.out.println("\n" + "Quale operazione vuoi effettuare?" + "\n" + 
 				"1 - Inserimento dati" + "\n" + 
 				"2 - Visualizzazione dati" + "\n" + 
@@ -48,31 +49,32 @@ public class CrudService {
 		switch(cmd) {
 		case "1":
 			inserimento();
-			return true;
-
+			option = true;
+			break;
 		case "2":
 			visualizza();
-			return true;
-
+			option = true;
+			break;
 		case "3":
 			eliminazione();
-			return true;
-
+			option = true;
+			break;
 		case "4":
 			modifica();
-			return true;
-
+			option = true;
+			break;
 		case "0":
 			repo.chiusuraApp();
-			return false;
-
+			option = false;
+			
 		default:
 			System.out.println("\n" 
 					+ "+---------+" + "\n" 
 					+ "| Errore! |" + "\n" 
 					+ "+---------+" + "\n");
-			return true;
+			option = true;
 		}
+		return option;
 	}
 
 	private void modifica() throws Exception {
@@ -88,11 +90,14 @@ public class CrudService {
 	}
 
 	private void visualizza() throws Exception {
-		repo.checkPresence();
+//		repo.checkPresence();
 		if(repo.checkPresence()) {
 			selezione();
 		} else {
-			System.out.println("\n" + "Tabella vuota!" + "\n");
+			System.out.println("\n" 
+					+ "+----------------+" + "\n" 
+					+ "| Tabella vuota! |" + "\n"
+					+ "+----------------+" + "\n");
 		}
 	}
 
@@ -105,6 +110,8 @@ public class CrudService {
 		int eta = sc.nextInt();
 		repo.insertPersona(name, surname, eta);
 	}
+	
+	
 	public void selezione() throws Exception {
 		System.out.println("\n" 
 				+ "Seleziona: " + "\n" 
@@ -158,7 +165,7 @@ public class CrudService {
 		} else {					
 			System.out.println(
 					"\n" + "+--------------------------------+" 
-							+ "\n" + " | Non ci sono dati da eliminare! | " 
+							+ "\n" + "| Non ci sono dati da eliminare! |" 
 							+ "\n" + "+--------------------------------+" 
 							+ "\n");
 		}

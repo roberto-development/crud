@@ -25,8 +25,10 @@ public class CrudRepo {
 	ResultSet rs;
 	PreparedStatement ps;
 
-	String ris;
+	String risposta;
 	String query;
+	boolean check;
+	String answer;
 
 	int id;
 	String name;
@@ -67,38 +69,121 @@ public class CrudRepo {
 	}
 
 
-	public void selezionaPersona() throws Exception {
+	public boolean selezionaPersona() throws Exception {
+		check = false;
 		try {
-			rs = st.executeQuery("SELECT id_persone, nome, cognome, eta FROM persone");
+			if(checkDb()) {
+				System.out.println("Digita l'ID della persona che vuoi visualizzare:");
+				String answer = sc.next();
+				rs = st.executeQuery("SELECT id_persone, nome, cognome, eta FROM persone WHERE id_persone = " + answer + ";");
 
-			while (rs.next()) {
-				id = rs.getInt("id_persone"); 
-				name = rs.getString("nome");
-				surname = rs.getString("cognome");
-				eta = rs.getInt("eta");
-				System.out.println("\n" 
-						+ " ID: " + id 	+ "\n"
-						+ " NOME: " + name	+ "\n"
-						+ " COGNOME: " + surname	+ "\n" 
-						+ " ETA': " + eta
-						+ "\n" + "+-------------------+");
+				while (rs.next()) {
+					id = rs.getInt("id_persone"); 
+					name = rs.getString("nome");
+					surname = rs.getString("cognome");
+					eta = rs.getInt("eta");
+					System.out.print("\n" 
+							+ " ID: " + id 	+ "\n"
+							+ " NOME: " + name	+ "\n"
+							+ " COGNOME: " + surname	+ "\n" 
+							+ " ETA': " + eta
+							+ "\n" + "+-------------------+" + "\n");
+					check = true;
+				}
+				updateOrDelete();
+			} else {
+				System.out.println("Errore!");
+				check = false;
 			}
-			System.out.println("Digita l'ID della persona che vuoi visualizzare:");
-			int answer = sc.nextInt();
-			rs = st.executeQuery("SELECT id_persone, nome, cognome, eta FROM persone WHERE id_persone like '" + answer + "'");
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return check;
+	}
 
-			while (rs.next()) {
-				id = rs.getInt("id_persone"); 
-				name = rs.getString("nome");
-				surname = rs.getString("cognome");
-				eta = rs.getInt("eta");
+
+	private void updateOrDelete() throws Exception {
+		System.out.println("\n" + "Cosa vuoi fare?" + "\n" + 
+				" 1 - modifica dati;" + "\n" +
+				" 2 - elimina dati;" + "\n" + "\n" + 
+				" 0 - menù principale" + "\n");
+
+		risposta = sc.next();
+		switch(risposta) {
+		case "1":
+			updateImmediately(id);
+			break;
+		case "2":
+			deleteImmediately(id);
+			break;
+
+		default:
+			System.out.println("Errore!");
+		}
+	}
+
+
+
+
+	private void updateImmediately(int id) {
+		try {
+			System.out.println("\n" + "Cosa vuoi modificare?" + "\n" 
+					+ "1 - Nome;" + "\n" 
+					+ "2 - Cognome;" + "\n" 
+					+ "3 - Età" + "\n");
+			risposta = sc.next();
+			switch (risposta) {
+			case "1":
+				System.out.println("\n" + "Inserisci nome:" + "\n");
+				String newNome = sc.next();
+				st.executeUpdate("UPDATE persone SET nome = '" + newNome + "' WHERE id_persone = " + id);
 				System.out.println("\n" 
-						+ " ID: " + id 	+ "\n"
-						+ " NOME: " + name	+ "\n"
-						+ " COGNOME: " + surname	+ "\n" 
-						+ " ETA': " + eta
-						+ "\n" + "+-------------------+");
+						+ "+---------------------+" + "\n" 
+						+ "| MODIFICA COMPLETATA |" + "\n" 
+						+ "+---------------------+" + "\n");				
+				break;
+
+			case "2":
+				System.out.println("\n" + "Inserisci cognome:" + "\n");
+				String newCognome = sc.next();
+				st.executeUpdate("UPDATE persone SET cognome = '" + newCognome + "' WHERE id_persone = " + id);
+				System.out.println("\n" 
+						+ "+---------------------+" + "\n" 
+						+ "| MODIFICA COMPLETATA |" + "\n" 
+						+ "+---------------------+" + "\n");
+				break;
+
+			case "3":
+				System.out.println("\n" + "Inserisci l'età:" + "\n");
+				int newEta = sc.nextInt();
+				st.executeUpdate("UPDATE persone SET eta = '" + newEta + "' WHERE id_persone = " + id);
+				System.out.println("\n" 
+						+ "+---------------------+" + "\n" 
+						+ "| MODIFICA COMPLETATA |" + "\n" 
+						+ "+---------------------+" + "\n");
+				break;
+
+			default:
+				System.out.println("\n" 
+						+ "+---------+" + "\n" 
+						+ "| Errore! |" + "\n" 
+						+ "+---------+" + "\n");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+
+	private void deleteImmediately(int id) {
+		try {
+			st.executeUpdate("DELETE FROM test.persone WHERE id_persone = " + id);
+			System.out.println("\n" 
+					+ "+------------+" + "\n" 
+					+ "| ELIMINATO! |" + "\n" 
+					+ "+------------+" + "\n");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -135,8 +220,8 @@ public class CrudRepo {
 					+ "1 - Nome;" + "\n" 
 					+ "2 - Cognome;" + "\n" 
 					+ "3 - Età" + "\n");
-			ris = sc.next();
-			switch (ris) {
+			risposta = sc.next();
+			switch (risposta) {
 			case "1":
 				System.out.println("\n" + "Inserisci nome:" + "\n");
 				String newNome = sc.next();
@@ -179,7 +264,7 @@ public class CrudRepo {
 	} 
 
 	public void eliminaPersona() throws Exception {	
-		selezionaLista();
+		checkDb();
 		try {
 			System.out.println("\n" + "Digita l'ID della persona che vuoi eliminare:");
 			int inputDel = sc.nextInt();
@@ -208,8 +293,10 @@ public class CrudRepo {
 
 
 
-	// verifica presenza dati nella tabella e li stampa tutti [solo per metodo modifica (CrudService)]
+
 	public boolean checkDb() throws Exception {
+
+		boolean check = false;
 		rs = st.executeQuery("SELECT id_persone, nome, cognome, eta FROM persone");
 		if(rs.next()) {
 			while (rs.next()) {		
@@ -224,31 +311,34 @@ public class CrudRepo {
 						+ " ETA': " + eta
 						+ "\n" + "+-------------------+" + "\n");
 			}
+			check = true;
 		} else {
-			System.out.println("\n" + "Tabella vuota!" + "\n");
-			return false;
+			check = false;
 		}
-		return true;
+		return check;
 	}
 
 
-	// verifica solo presenza dati [metodo modifica (CrudService)]
 	public boolean checkPresence() throws Exception {
+		boolean checkPres = false;
 		try {
 			rs = st.executeQuery("SELECT id_persone, nome, cognome, eta FROM persone");
 			if(rs.next()) {
 				do {	
-					return true;
+					checkPres = true;
 				} while (rs.next());
-			} 
+			} else {
+//				System.out.println("\n" + "Tabella vuota!" + "\n");
+				checkPres = false;
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
+			//			checkPres = false;
 		}
-		return false;	
+		return checkPres;	
 	}
 
 
-	// chiusura statement e connessione
 	public void chiusuraApp() throws Exception {
 		System.out.println("\n" 
 				+ "+--------------+" + "\n" 
